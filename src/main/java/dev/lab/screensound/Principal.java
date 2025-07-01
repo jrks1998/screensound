@@ -28,8 +28,10 @@ public class Principal {
 			System.out.println("SCREENSOUND MUSICAS");
 			System.out.println("1 - Cadastrar artista");
 			System.out.println("2 - Cadastrar musica");
-			System.out.println("3 -Listar artistas cadastrados");
+			System.out.println("3 - Listar artistas cadastrados");
 			System.out.println("4 - Listar musicas cadastradas");
+			System.out.println("5 - Listar músicas por artista");
+			System.out.println("\n0 - Sair");
 			System.out.print("Informe uma opção: ");
 			try {
 				opc = scan.nextInt();
@@ -42,10 +44,16 @@ public class Principal {
 						cadastrarMusica();
 						break;
 					case 3:
-//						listarArtistas();
+						listarArtistas();
 						break;
 					case 4:
-//						listarMusicas();
+						listarMusicas();
+						break;
+					case 5:
+						buscarMusicasPorArtista();
+						break;
+					case 0:
+						opc = 0;
 						break;
 					default:
 						System.out.println("Opção inválida");
@@ -64,52 +72,45 @@ public class Principal {
 		nome = scan.nextLine().toUpperCase();
 		System.out.print("Informe o tipo do artista (solo/dupla/banda): ");
 		tipo = scan.nextLine().toUpperCase();
-		TipoArtista tipoArtista = null;
-		switch (tipo) {
-			case "SOLO":
-				tipoArtista = TipoArtista.fromString(tipo);
-				break;
-			case "DUPLA" :
-				tipoArtista = TipoArtista.fromString(tipo);
-				break;
-			case "BANDA":
-				tipoArtista = TipoArtista.fromString(tipo);
-				break;
-			default:
-				System.out.println("tipo não aceito. apenas solo, dupla ou banda são tipos aceitos");
-		}
+		TipoArtista tipoArtista = TipoArtista.fromString(tipo);
 		if (tipoArtista != null) {
-			TipoArtista.fromString(tipo);
 			repositorioArtista.save(new Artista(nome, tipoArtista));
 		} else {
+			System.out.println("Tipo inválido. Apenas solo, dupla ou banda são aceitos");
 			System.out.println("Artista não cadastrado");
 		}
 	}
 	
-	private int escolherArtista(List<Artista> artistas) {
-		int i, opc = -1;
-		for (i = 0; i < artistas.size(); i++) {
-			System.out.println(String.format("%d - %s", i, artistas.get(i)));
-		}
-		System.out.println(i + " - ARTISTA NÃO ENCONTRADO");
-		System.out.print("Escolha uma opção: ");
-		try {
-			opc = scan.nextInt();
-			scan.nextLine();
-			while (i < 0 || i > artistas.size()) {
-				System.out.println("Opção inválida");
+	private int escolherItemDaLista(int min, int max, String mensagem) {
+		int opc = -1;
+		boolean valido = false;
+		while (!valido) {
+			System.out.print(mensagem);
+			try {
+				opc = scan.nextInt();
+				scan.nextLine();
+				if (opc >= min && opc <= max) {
+					valido = true;
+				} else {
+					System.out.println("Opção inválida");
+				}
+			} catch (InputMismatchException e) {
+				System.out.println("Entrada inválida. Somente números são aceitos");
 			}
-		} catch (InputMismatchException e) {
-			System.out.println("Entrada inválida. Somente números são aceitos");
 		}
 		return opc;
 	}
 	
 	private Artista menuEscolherArtista() {
-		Artista artista = new Artista();
+		Artista artista;
 		List<Artista> artistas = repositorioArtista.findAll();
 		System.out.println("SELECIONE O ARTISTA");
-		int escolha = escolherArtista(artistas);
+		int i;
+		for (i = 0; i < artistas.size(); i++) {
+			System.out.println(String.format("%d - %s", i, artistas.get(i).getNome()));
+		}
+		System.out.println(String.format("%d - ARTISTA NÃO CADASTRADO", i));
+		int escolha = escolherItemDaLista(0, artistas.size(), "Escolha uma opção: ");
 		if (escolha == artistas.size()) {
 			cadastrarArtista();
 			return menuEscolherArtista();
@@ -129,10 +130,35 @@ public class Principal {
 		album = scan.nextLine().toUpperCase();
 		Artista artista = menuEscolherArtista();
 		if (artista != null) {
-			artista.setMusicas(List.of(new Musica(nome, album, artista)));
+			Musica musica = new Musica(nome, album, artista);
+			artista.setMusicas(List.of(musica));
 			repositorioArtista.save(artista);
 		} else {
 			System.out.println("Artista inválido");
 		}
+	}
+	
+	public void listarArtistas() {
+		List<Artista> artistas = repositorioArtista.findAll();
+		System.out.println("ARTISTAS CADASTRADOS");
+		artistas.forEach(System.out::println);
+	}
+	
+	public void listarMusicas() {
+		List<Musica> musicas = repositorioMusica.findAll();
+		System.out.println("MUSICAS CADASTRADAS");
+		musicas.forEach(System.out::println);
+	}
+	
+	public void buscarMusicasPorArtista() {
+		List<Artista> artistas = repositorioArtista.findAll();
+		System.out.println("MUSICAS POR ARTISTA");
+		for (int i = 0; i < artistas.size(); i++) {
+			System.out.println(String.format("%d - %s", i, artistas.get(i).getNome()));
+		}
+		int escolha = escolherItemDaLista(0, artistas.size() - 1, "Escolha uma opção: ");
+		List<Musica> musicas = repositorioMusica.musicasPorArtista(artistas.get(escolha));
+		System.out.println("MUSICAS CADASTRADAS DO ARTISTA " + artistas.get(escolha).getNome());
+		musicas.forEach(System.out::println);
 	}
 }

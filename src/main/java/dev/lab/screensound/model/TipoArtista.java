@@ -16,7 +16,7 @@ public enum TipoArtista {
 				return tipoArtista;
 			}
 		}
-		throw new IllegalArgumentException("Nenhuma categoria encontrada para o texto " + texto);
+		return null;
 	}
 	
 	public String getTipoArtista() {
