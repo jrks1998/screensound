@@ -1,5 +1,6 @@
 package dev.lab.screensound.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ public class Musica {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
+	@Column(unique = true, nullable = false)
 	private String nome;
 	private String album;
 	@ManyToOne(fetch = FetchType.EAGER)
